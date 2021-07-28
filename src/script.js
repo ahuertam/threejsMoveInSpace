@@ -75,7 +75,7 @@ function createFloor() {
   });
   const plane = new THREE.Mesh(geometry, material);
   plane.map = THREE.ImageUtils.loadTexture(
-    "https://www.onlygfx.com/wp-content/uploads/2016/02/green-paint-1024x714.jpg"
+    "../assets/green-paint-1024x714.jpg"
   );
   plane.rotation.x = (-1 * Math.PI) / 2;
   plane.position.y = 0;
