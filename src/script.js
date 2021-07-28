@@ -82,7 +82,7 @@ function createFloor() {
   scene.add(plane);
 }
 //controls
-const speed = { x: 0.02, y: 0.02, z: 0.05 };
+const speed = { x: 0.02, y: 0.02, z: 0.03 };
 const moving = {
   right: false,
   left: false,
@@ -216,11 +216,11 @@ const loop = () => {
   if (moving.right) {
     mesh.translateX(speed.x * elapsedTime);
   }
-  if (moving.upward && mesh.position.z < 100) {
+  if (moving.upward && mesh.position.y < 15) {
     mesh.translateZ(speed.z * elapsedTime);
   }
-  if (!moving.upward && mesh.position.z > 2) {
-    mesh.translateZ(-0.08 * elapsedTime);
+  if (!moving.upward && mesh.position.y > 2) {
+    mesh.translateZ(-0.008 * elapsedTime);
   }
   const target = mesh.position.clone();
   camera.lookAt(mesh.position);
@@ -228,7 +228,6 @@ const loop = () => {
   target.y += 1.5;
 
   camera.position.lerp(target, elapsedTime * 0.01);
-
   // render * 0.01
   renderer.render(scene, camera);
   // loop
