@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import "./style.css";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import mountainFragment from "./shaders/mountains.fragment.glsl";
 import mountainVertex from "./shaders/mountains.vertex.glsl";
 
@@ -57,7 +56,7 @@ scene.add(mesh);
 // floor
 function createFloor() {
   const grassTexture = new THREE.TextureLoader().load(
-    "../assets/grass_texture.jpg"
+    "http://s3-us-west-2.amazonaws.com/s.cdpn.io/1206469/earthmap1k.jpg"
   );
   grassTexture.wrapS = THREE.RepeatWrapping;
   grassTexture.wrapT = THREE.RepeatWrapping;
@@ -183,9 +182,6 @@ camera.position.y = 0;
 
 scene.add(camera);
 
-// Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
 
 // Renderer
 
@@ -202,7 +198,11 @@ const loop = () => {
   const elapsedTime = clock.getElapsedTime();
   planetMesh.rotation.y += 0.005;
   ringMesh.rotation.z += 0.009;
-  controls.update();
+
+  // mesh.position.y = Math.sin(elapsedTime)
+
+  console.log(Math.sin(elapsedTime) + 1.5)
+
 
   if (moving.top) {
     mesh.translateY(speed.y * elapsedTime);
@@ -212,9 +212,13 @@ const loop = () => {
   }
   if (moving.left) {
     mesh.translateX(-speed.x * elapsedTime);
+    // mesh.rotateY(-0.01); // necesario mirar un límite para que se incline un poco al girar
+    mesh.rotateZ(0.01);
   }
   if (moving.right) {
     mesh.translateX(speed.x * elapsedTime);
+    // mesh.rotateY(0.01);
+    mesh.rotateZ(-0.01);
   }
   if (moving.upward && mesh.position.y < 15) {
     mesh.translateZ(speed.z * elapsedTime);
@@ -223,10 +227,10 @@ const loop = () => {
     mesh.translateZ(-0.008 * elapsedTime);
   }
   const target = mesh.position.clone();
-  camera.lookAt(mesh.position);
+
   target.z += 2;
   target.y += 1.5;
-
+  camera.lookAt(mesh.position);
   camera.position.lerp(target, elapsedTime * 0.01);
   // render * 0.01
   renderer.render(scene, camera);
