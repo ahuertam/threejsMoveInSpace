@@ -1,9 +1,13 @@
 import * as THREE from "three";
 import "./style.css";
+
 import mountainFragment from "./shaders/mountains.fragment.glsl";
 import mountainVertex from "./shaders/mountains.vertex.glsl";
 
 const canvas = document.querySelector("#webgl01");
+const gravity = 9.81;
+const resistance = 3;
+
 // Cursor
 const cursor = { x: 0, y: 0 };
 window.addEventListener("mousemove", (event) => {
@@ -14,7 +18,7 @@ window.addEventListener("mousemove", (event) => {
 // Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xccddff);
-scene.fog = new THREE.FogExp2(0xf0fff0, 0.004);
+
 // Ambient lights.
 const ambient = new THREE.AmbientLight(0xffffff);
 scene.add(ambient);
@@ -45,8 +49,8 @@ const ring = (posX, posY, posZ) => {
 };
 
 // Player
-const geometry2 = new THREE.ConeGeometry(1, 1, 3);
-const material = new THREE.MeshBasicMaterial({ color: "orange" });
+const geometry2 = new THREE.ConeGeometry(1, 1, 6);
+const material = new THREE.MeshBasicMaterial({ color: "orange"});
 const mesh = new THREE.Mesh(geometry2, material);
 mesh.position.set(0.7, 1, 1);
 mesh.scale.set(0.3, 0.7, 0.3);
@@ -81,7 +85,7 @@ function createFloor() {
   scene.add(plane);
 }
 //controls
-const speed = { x: 0.02, y: 0.02, z: 0.03 };
+const speed = { x: 6, y: 10, z: 7 };
 const moving = {
   right: false,
   left: false,
@@ -148,8 +152,19 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
-const hemisphereLight = new THREE.HemisphereLight(0xdddddd, 0x000000, 0.5);
+//FOG
+scene.fog = new THREE.FogExp2(0xf0fff0, 0.004);
+
+// Lights
+const hemisphereLight = new THREE.HemisphereLight(0xfffafa, 0x000000, 0.9);
 scene.add(hemisphereLight);
+const sun = new THREE.DirectionalLight(0xcdc1c5, 0.9);
+sun.position.set(12, 6, -7);
+sun.castShadow = true;
+scene.add(sun);
+
+// const hemisphereLight = new THREE.HemisphereLight(0xdddddd, 0x000000, 0.5);
+// scene.add(hemisphereLight);
 
 window.addEventListener("dblclick", () => {
   const fullscreenElement =
@@ -182,7 +197,6 @@ camera.position.y = 0;
 
 scene.add(camera);
 
-
 // Renderer
 
 const renderer = new THREE.WebGLRenderer({ canvas });
@@ -195,48 +209,45 @@ const clock = new THREE.Clock();
 // Animations
 const loop = () => {
   // Time
-  const elapsedTime = clock.getElapsedTime();
+  const delta = clock.getDelta();
   planetMesh.rotation.y += 0.005;
   ringMesh.rotation.z += 0.009;
 
-  // mesh.position.y = Math.sin(elapsedTime)
-
-  console.log(Math.sin(elapsedTime) + 1.5)
-
-
   if (moving.top) {
-    mesh.translateY(speed.y * elapsedTime);
+    mesh.translateY(speed.y * delta);
   }
   if (moving.down) {
-    mesh.translateY(-speed.y * elapsedTime);
+    mesh.translateY(-speed.y * delta);
   }
   if (moving.left) {
-    mesh.translateX(-speed.x * elapsedTime);
-    // mesh.rotateY(-0.01); // necesario mirar un límite para que se incline un poco al girar
+    mesh.translateX(-speed.x * delta);
+    //mesh.rotateY(-0.01); // necesario mirar un límite para que se incline un poco al girar
     mesh.rotateZ(0.01);
   }
   if (moving.right) {
-    mesh.translateX(speed.x * elapsedTime);
+    mesh.translateX(speed.x * delta);
     // mesh.rotateY(0.01);
     mesh.rotateZ(-0.01);
   }
-  if (moving.upward && mesh.position.y < 15) {
-    mesh.translateZ(speed.z * elapsedTime);
+  if (moving.upward && mesh.position.y < 7) {
+    mesh.translateZ(speed.z * delta);
+    //Meter rotacion up cuando sube y down cuando baje
   }
   if (!moving.upward && mesh.position.y > 2) {
-    mesh.translateZ(-0.008 * elapsedTime);
+    mesh.translateZ((-gravity +resistance )* delta);
   }
   const target = mesh.position.clone();
 
   target.z += 2;
   target.y += 1.5;
   camera.lookAt(mesh.position);
-  camera.position.lerp(target, elapsedTime * 0.01);
+  camera.position.lerp(mesh.position, 0.03);
+  camera.position.y = 5; // keep the elevation;
   // render * 0.01
   renderer.render(scene, camera);
   // loop
   window.requestAnimationFrame(loop);
-};
+};;;
 planet(30, 10, -400);
 ring(0, 2, -60);
 createFloor();
